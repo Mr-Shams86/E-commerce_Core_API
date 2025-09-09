@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.egg-info/
+*.egg
+.env
+.env.*
+.venv
+venv/
+
+# Caches
+.cache/
+.mypy_cache/
+.pytest_cache/
+coverage/
+htmlcov/
+*.coverage
+
+# Build
+dist/
+build/
+*.spec
+
+# VS Code / IDE
+.vscode/
+.idea/
+
+# Docker
+*.log
+docker-data/
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db

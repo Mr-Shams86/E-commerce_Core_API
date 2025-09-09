@@ -1,0 +1,17 @@
+.
+├── app
+│   ├── api
+│   │   └── routers
+│   │       └── health.py
+│   ├── core
+│   │   └── config.py
+│   ├── __init__.py
+│   └── main.py
+├── docker
+│   └── api.Dockerfile
+├── docker-compose.yml
+├── pyproject.toml
+├── README.md
+└── structure.txt
+
+5 directories, 9 files
