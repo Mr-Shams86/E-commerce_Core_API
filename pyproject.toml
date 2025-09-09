@@ -13,4 +13,11 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
-select = ["E","F","I"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
