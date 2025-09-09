@@ -37,3 +37,11 @@ docker-data/
 # OS
 .DS_Store
 Thumbs.db
+
+# ===============================
+#  ПРОЧЕЕ
+# ===============================
+README.md.bak
+TODO.md
+structure.txt
+.treeignore

@@ -10,8 +10,9 @@
 ├── docker
 │   └── api.Dockerfile
 ├── docker-compose.yml
+├── Makefile
 ├── pyproject.toml
 ├── README.md
 └── structure.txt
 
-5 directories, 9 files
+5 directories, 10 files
