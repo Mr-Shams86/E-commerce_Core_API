@@ -1,10 +1,11 @@
 FROM python:3.11-slim
 
+WORKDIR /app
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
-WORKDIR /app
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 # системные пакеты (build-essential может не понадобиться)
 RUN apt-get update \
@@ -18,6 +19,9 @@ RUN pip install --upgrade pip --no-cache-dir \
 
 # код приложения
 COPY app /app/app
+COPY alembic.ini /app/alembic.ini
+COPY alembic /app/alembic
+
 
 # нерутовый пользователь
 RUN useradd -u 10001 appuser && chown -R appuser:appuser /app

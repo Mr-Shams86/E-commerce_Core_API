@@ -45,3 +45,8 @@ README.md.bak
 TODO.md
 structure.txt
 .treeignore
+
+alembic/**/__pycache__/
+
+alembic/versions/__pycache__/
+.ruff_cache/
