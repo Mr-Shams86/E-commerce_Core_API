@@ -1,4 +1,6 @@
-# Python
+# ===============================
+#  PYTHON
+# ===============================
 __pycache__/
 *.pyc
 *.pyo
@@ -7,46 +9,58 @@ __pycache__/
 *.db
 *.egg-info/
 *.egg
+
+# Виртуальные окружения
 .env
 .env.*
-.venv
+.venv/
 venv/
 
-# Caches
+# ===============================
+#  КЭШИ / COVERAGE
+# ===============================
 .cache/
 .mypy_cache/
 .pytest_cache/
 coverage/
 htmlcov/
 *.coverage
+.ruff_cache/
 
-# Build
+# ===============================
+#  СБОРКА
+# ===============================
 dist/
 build/
 *.spec
 
-# VS Code / IDE
+# ===============================
+#  IDE / EDITORS
+# ===============================
 .vscode/
 .idea/
 
-# Docker
+# ===============================
+#  DOCKER
+# ===============================
 *.log
 docker-data/
 .docker/
 
-# OS
+# ===============================
+#  ОС
+# ===============================
 .DS_Store
 Thumbs.db
 
 # ===============================
-#  ПРОЧЕЕ
+#  ПРОЧЕЕ (не для проды)
 # ===============================
 README.md.bak
 TODO.md
 structure.txt
 .treeignore
 
+# Alembic служебные каталоги
 alembic/**/__pycache__/
-
 alembic/versions/__pycache__/
-.ruff_cache/
