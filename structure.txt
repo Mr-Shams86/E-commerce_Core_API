@@ -1,18 +1,45 @@
 .
+├── alembic
+│   ├── env.py
+│   ├── README
+│   ├── script.py.mako
+│   └── versions
+│       └── 4d3a288ebf04_initial_schema.py
+├── alembic.ini
 ├── app
 │   ├── api
+│   │   ├── deps.py
+│   │   ├── __init__.py
 │   │   └── routers
-│   │       └── health.py
+│   │       ├── admin_catalog.py
+│   │       ├── auth.py
+│   │       ├── health.py
+│   │       ├── __init__.py
+│   │       ├── products.py
+│   │       └── users.py
 │   ├── core
-│   │   └── config.py
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── db.py
 │   ├── __init__.py
-│   └── main.py
+│   ├── main.py
+│   ├── models
+│   │   ├── catalog.py
+│   │   ├── __init__.py
+│   │   └── user.py
+│   └── schemas
+│       ├── catalog.py
+│       ├── __init__.py
+│       └── user.py
+├── dev-requirements.txt
 ├── docker
 │   └── api.Dockerfile
+├── docker-compose.override.yml
 ├── docker-compose.yml
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
+├── requirements.txt
 └── structure.txt
 
-5 directories, 10 files
+9 directories, 33 files

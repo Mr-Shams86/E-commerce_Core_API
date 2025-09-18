@@ -86,3 +86,7 @@ psql:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + ; \
 	find . -type f -name "*.pyc" -delete
+
+## Подключиться к psql в контейнере БД (вариант 2)
+psql:
+	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
