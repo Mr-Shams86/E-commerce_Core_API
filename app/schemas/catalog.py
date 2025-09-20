@@ -59,6 +59,26 @@ class ProductBase(BaseModel):
     is_active: Optional[bool] = None
 
 
+class ProductCreate(BaseModel):
+    sku: str
+    name: str
+    slug: str
+    brand_id: Optional[int] = None
+    category_id: Optional[int] = None
+    price_cents: int
+    is_active: bool = True
+
+
+class ProductUpdate(BaseModel):
+    sku: Optional[str] = None
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    brand_id: Optional[int] = None
+    category_id: Optional[int] = None
+    price_cents: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
 class ProductRead(ProductBase):
     id: int
     created_at: datetime
