@@ -19,19 +19,32 @@ def db():
     try:
         yield session
     finally:
+        # Откат незакоммиченных изменений и закрытие сессии
         session.rollback()
         session.close()
 
 
+def get_or_create(session, model, **kwargs):
+    obj = session.query(model).filter_by(**kwargs).first()
+    if obj:
+        return obj
+    obj = model(**kwargs)
+    session.add(obj)
+    session.commit()
+    session.refresh(obj)
+    return obj
+
+
 @pytest.fixture()
 def sample_catalog(db):
-    brand = Brand(name="TestBrand", slug="testbrand")
-    cat = Category(name="TestCat", slug="testcat")
+    # Бренд/категория — «idempotent»
+    brand = get_or_create(db, Brand, name="TestBrand", slug="testbrand")
+    cat = get_or_create(db, Category, name="TestCat", slug="testcat")
 
-    db.add_all([brand, cat])
+    # На всякий случай удалим возможные продукты с теми же SKU
+    # (если сид или прошлый тест их оставил)
+    db.query(Product).filter(Product.sku.in_(["A1", "B1", "C1"])).delete(synchronize_session=False)
     db.commit()
-    db.refresh(brand)
-    db.refresh(cat)
 
     items = [
         Product(
@@ -67,4 +80,5 @@ def sample_catalog(db):
     ]
     db.add_all(items)
     db.commit()
+
     return {"brand_id": brand.id, "category_id": cat.id}
