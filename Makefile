@@ -50,6 +50,8 @@ fmt:
 test:
 	pytest -q
 
+	\tdocker compose exec api pytest -q -o cache_dir=/tmp/pytest_cache
+
 ## Установить runtime-зависимости
 install:
 	pip install -r requirements.txt

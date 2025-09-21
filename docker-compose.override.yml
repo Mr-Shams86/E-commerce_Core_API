@@ -1,8 +1,12 @@
 services:
   api:
+    environment:
+      PYTEST_ADDOPTS: "-o cache_dir=/tmp/pytest_cache"
+    user: "${UID}:${GID}"
     volumes:
       - ./app:/app/app
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
-    # (опционально, удобно для разработки)
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --reload

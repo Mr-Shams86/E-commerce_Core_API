@@ -4,7 +4,8 @@
 │   ├── README
 │   ├── script.py.mako
 │   └── versions
-│       └── 4d3a288ebf04_initial_schema.py
+│       ├── 4d3a288ebf04_initial_schema.py
+│       └── d48c3e83618a_add_indexes_for_products_listing.py
 ├── alembic.ini
 ├── app
 │   ├── api
@@ -40,6 +41,12 @@
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-└── structure.txt
+├── scripts
+│   └── seed_demo_data.py
+├── structure.txt
+└── tests
+    ├── api
+    │   └── test_products.py
+    └── conftest.py
 
-9 directories, 33 files
+12 directories, 37 files
