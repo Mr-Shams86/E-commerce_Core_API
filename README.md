@@ -1,5 +1,3 @@
----
-
 # E-commerce Core API (FastAPI)
 
 Минимальное ядро API для e-commerce: аутентификация, каталог (категории, бренды, товары), листинг с фильтрами и сортировкой. Запуск в Docker.
@@ -287,5 +285,3 @@ docker compose exec -T db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 
 
   * проверь `docker compose ps` (api должен слушать `0.0.0.0:8000`);
   * убедись, что порт 8000 не занят локальным процессом.
-
----
