@@ -7,10 +7,14 @@ from app.core.config import settings
 from app.db import get_db
 from app.models import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+# важно: ведущий слеш — чтобы ссылка в OpenAPI была корректной
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User:
     credentials_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -25,6 +29,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_error
 
     user = db.query(User).filter(User.email == email).first()
-    if not user:
+    if not user or not user.is_active:
         raise credentials_error
     return user

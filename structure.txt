@@ -32,6 +32,7 @@
 │       ├── catalog.py
 │       ├── __init__.py
 │       └── user.py
+├── comands.txt
 ├── dev-requirements.txt
 ├── docker
 │   └── api.Dockerfile
@@ -39,6 +40,7 @@
 ├── docker-compose.yml
 ├── Makefile
 ├── pyproject.toml
+├── pytest.ini
 ├── README.md
 ├── requirements.txt
 ├── scripts
@@ -49,4 +51,4 @@
     │   └── test_products.py
     └── conftest.py
 
-12 directories, 37 files
+12 directories, 39 files
