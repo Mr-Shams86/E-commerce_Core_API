@@ -41,3 +41,29 @@ def test_register_conflict(client):
     # повторная попытка — 409 Conflict
     r2 = client.post("/auth/register", json={"email": email, "password": "x123456"})
     assert r2.status_code == HTTPStatus.CONFLICT
+
+
+def test_admin_requires_superuser(client):
+    email = _unique_email()
+    password = "x123456"
+
+    # обычный пользователь
+    r = client.post("/auth/register", json={"email": email, "password": password})
+    assert r.status_code == HTTPStatus.CREATED, r.text
+
+    # логин (форм-дата!)
+    r = client.post(
+        "/auth/login",
+        data={"username": email, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert r.status_code == HTTPStatus.OK, r.text
+    token = r.json()["access_token"]
+
+    # доступ в /admin/*
+    res = client.post(
+        "/admin/brands",
+        json={"name": "X", "slug": "x"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res.status_code == HTTPStatus.FORBIDDEN

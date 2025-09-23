@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_db, require_superuser
 from app.models.catalog import Brand, Category, Product
-from app.models.user import User
 from app.schemas.catalog import (
     BrandCreate,
     BrandRead,
@@ -16,21 +15,14 @@ from app.schemas.catalog import (
     ProductUpdate,
 )
 
-router = APIRouter(prefix="/admin", tags=["admin:catalog"])
-
-
-def staff_required(user: User = Depends(get_current_user)) -> User:
-    if not user.is_superuser:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    return user
+# Один раз требуем суперправа на весь /admin
+router = APIRouter(
+    prefix="/admin", tags=["admin:catalog"], dependencies=[Depends(require_superuser)]
+)
 
 
 # ------- Category -------
-@router.post(
-    "/categories",
-    response_model=CategoryRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.post("/categories", response_model=CategoryRead)
 def create_category(payload: CategoryCreate, db: Session = Depends(get_db)) -> CategoryRead:
     obj = Category(**payload.model_dump())
     db.add(obj)
@@ -39,11 +31,7 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db)) -> C
     return obj
 
 
-@router.patch(
-    "/categories/{cat_id}",
-    response_model=CategoryRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.patch("/categories/{cat_id}", response_model=CategoryRead)
 def update_category(
     cat_id: int, payload: CategoryUpdate, db: Session = Depends(get_db)
 ) -> CategoryRead:
@@ -59,11 +47,7 @@ def update_category(
     return obj
 
 
-@router.delete(
-    "/categories/{cat_id}",
-    status_code=204,
-    dependencies=[Depends(staff_required)],
-)
+@router.delete("/categories/{cat_id}", status_code=204)
 def delete_category(cat_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.get(Category, cat_id)
     if not obj:
@@ -73,11 +57,7 @@ def delete_category(cat_id: int, db: Session = Depends(get_db)) -> None:
 
 
 # ------- Brand -------
-@router.post(
-    "/brands",
-    response_model=BrandRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.post("/brands", response_model=BrandRead)
 def create_brand(payload: BrandCreate, db: Session = Depends(get_db)) -> BrandRead:
     obj = Brand(**payload.model_dump())
     db.add(obj)
@@ -86,11 +66,7 @@ def create_brand(payload: BrandCreate, db: Session = Depends(get_db)) -> BrandRe
     return obj
 
 
-@router.patch(
-    "/brands/{brand_id}",
-    response_model=BrandRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.patch("/brands/{brand_id}", response_model=BrandRead)
 def update_brand(brand_id: int, payload: BrandUpdate, db: Session = Depends(get_db)) -> BrandRead:
     obj = db.get(Brand, brand_id)
     if not obj:
@@ -104,11 +80,7 @@ def update_brand(brand_id: int, payload: BrandUpdate, db: Session = Depends(get_
     return obj
 
 
-@router.delete(
-    "/brands/{brand_id}",
-    status_code=204,
-    dependencies=[Depends(staff_required)],
-)
+@router.delete("/brands/{brand_id}", status_code=204)
 def delete_brand(brand_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.get(Brand, brand_id)
     if not obj:
@@ -118,11 +90,7 @@ def delete_brand(brand_id: int, db: Session = Depends(get_db)) -> None:
 
 
 # ------- Product -------
-@router.post(
-    "/products",
-    response_model=ProductRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.post("/products", response_model=ProductRead)
 def create_product(payload: ProductCreate, db: Session = Depends(get_db)) -> ProductRead:
     obj = Product(**payload.model_dump())
     db.add(obj)
@@ -131,11 +99,7 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db)) -> Pro
     return obj
 
 
-@router.patch(
-    "/products/{prod_id}",
-    response_model=ProductRead,
-    dependencies=[Depends(staff_required)],
-)
+@router.patch("/products/{prod_id}", response_model=ProductRead)
 def update_product(
     prod_id: int, payload: ProductUpdate, db: Session = Depends(get_db)
 ) -> ProductRead:
@@ -151,11 +115,7 @@ def update_product(
     return obj
 
 
-@router.delete(
-    "/products/{prod_id}",
-    status_code=204,
-    dependencies=[Depends(staff_required)],
-)
+@router.delete("/products/{prod_id}", status_code=204)
 def delete_product(prod_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.get(Product, prod_id)
     if not obj:

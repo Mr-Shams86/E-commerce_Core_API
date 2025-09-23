@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.db import get_db
 from app.models import User
 
-# важно: ведущий слеш — чтобы ссылка в OpenAPI была корректной
+# ведущий слэш важен для корректной ссылки в OpenAPI
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
@@ -32,3 +32,9 @@ def get_current_user(
     if not user or not user.is_active:
         raise credentials_error
     return user
+
+
+def require_superuser(current: User = Depends(get_current_user)) -> User:
+    if not current.is_superuser:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    return current

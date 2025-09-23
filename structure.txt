@@ -48,7 +48,8 @@
 ├── structure.txt
 └── tests
     ├── api
+    │   ├── test_auth.py
     │   └── test_products.py
     └── conftest.py
 
-12 directories, 39 files
+12 directories, 40 files

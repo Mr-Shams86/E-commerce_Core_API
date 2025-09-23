@@ -1,4 +1,5 @@
 # E-commerce Core API (FastAPI)
+![CI](https://github.com/Mr-Shams86/E-commerce_Core_API/actions/workflows/ci.yml/badge.svg)
 
 Минимальное ядро API для e-commerce: аутентификация, каталог (категории, бренды, товары), листинг с фильтрами и сортировкой. Запуск в Docker.
 
