@@ -1,3 +1,4 @@
+import json
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -5,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
+from app.core.cache import get_redis
 from app.models.catalog import Product
 from app.schemas.catalog import Page
 
@@ -23,6 +25,19 @@ def list_products(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ):
+    r = get_redis()
+    cache_key = f"products:{q or ''}:{category_id or ''}:{brand_id or ''}:{sort}:{limit}:{offset}"
+
+    if r is not None:
+        try:
+            cached = r.get(cache_key)
+            if cached:
+                if isinstance(cached, bytes):
+                    cached = cached.decode("utf-8")
+                return json.loads(cached)
+        except Exception:
+            pass
+
     # Базовые фильтры (используем один и тот же набор для items и total)
     filters = [Product.is_active.is_(True)]
 
@@ -50,6 +65,15 @@ def list_products(
 
     # Отдельный subquery по тем же фильтрам для total — без варнинга
     base_stmt = select(Product.id).where(*filters).subquery()
-    total = db.scalar(select(func.count()).select_from(base_stmt))
+    total = db.scalar(select(func.count()).select_from(base_stmt)) or 0
 
-    return Page(total=total or 0, limit=limit, offset=offset, items=items)
+    result = Page(total=total, limit=limit, offset=offset, items=items)
+
+    # Redis: записываем на 120 секунд
+    if r is not None:
+        try:
+            r.setex(cache_key, 120, json.dumps(result.model_dump(mode="json")))
+        except Exception:
+            pass
+
+    return result

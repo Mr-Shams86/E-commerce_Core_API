@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, HttpUrl
 
 
 # --- Category ---
@@ -92,3 +92,20 @@ class Page(BaseModel):
     limit: int
     offset: int
     items: list[ProductRead]
+
+
+class ProductImageIn(BaseModel):
+    url: HttpUrl
+    is_primary: bool = False
+    position: int = 0
+
+
+class ProductImageOut(ProductImageIn):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InventoryOut(BaseModel):
+    product_id: int
+    qty: int
+    track_inventory: bool
