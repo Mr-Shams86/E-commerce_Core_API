@@ -31,13 +31,19 @@ jobs:
           POSTGRES_PASSWORD: supersecret
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U ecommerce_user -d ecommerce_db"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+          --health-cmd="pg_isready -U ecommerce_user -d ecommerce_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
       redis:
         image: redis:7-alpine
         ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping || exit 1"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
 
     steps:
       - uses: actions/checkout@v4
@@ -63,8 +69,12 @@ jobs:
         run: |
           echo "DATABASE_URL=postgresql+psycopg://ecommerce_user:supersecret@localhost:5432/ecommerce_db" >> $GITHUB_ENV
           echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
+          # опционально (есть дефолты в Settings)
+          echo "SECRET_KEY=ci_secret_key" >> $GITHUB_ENV
+          echo "JWT_ALGORITHM=HS256" >> $GITHUB_ENV
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=1440" >> $GITHUB_ENV
 
-      - name: Apply migrations
+      - name: Alembic upgrade
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
         run: alembic upgrade head
@@ -72,4 +82,5 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
         run: pytest -q
