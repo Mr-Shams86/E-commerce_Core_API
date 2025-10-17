@@ -22,3 +22,11 @@ def test_pagination(client, sample_catalog):
     r2 = client.get("/products?limit=1&offset=1")
     assert r1.status_code == r2.status_code == 200
     assert r1.json()["items"][0]["id"] != r2.json()["items"][0]["id"]
+
+
+def test_products_sort_price_desc(client, db):
+    r = client.get("/products?sort=price_desc&limit=5")
+    assert r.status_code == 200
+    data = r.json()
+    prices = [p["price_cents"] for p in data["items"]]
+    assert prices == sorted(prices, reverse=True)

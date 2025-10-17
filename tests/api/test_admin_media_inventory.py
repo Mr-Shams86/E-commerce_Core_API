@@ -2,8 +2,12 @@ from http import HTTPStatus
 from uuid import uuid4
 
 
-def _u():
+def _u() -> str:
     return f"u_{uuid4().hex[:6]}@example.com"
+
+
+def _sfx() -> str:
+    return uuid4().hex[:6]
 
 
 def _make_admin_token(client) -> str:
@@ -28,18 +32,19 @@ def _make_admin_token(client) -> str:
 
     # логин (OAuth2PasswordRequestForm → form-data)
     r = client.post("/auth/login", data={"username": email, "password": password})
-    assert r.status_code == HTTPStatus.OK
+    assert r.status_code == HTTPStatus.OK, r.text
     return r.json()["access_token"]
 
 
 def test_admin_images_and_inventory_flow(client, db):
     token = _make_admin_token(client)
     headers = {"Authorization": f"Bearer {token}"}
+    s = _sfx()
 
-    # создаём бренд/категорию/товар
+    # создаём бренд
     b = client.post(
         "/admin/brands",
-        json={"name": "XBrand", "slug": "xbrand"},
+        json={"name": f"XBrand-{s}", "slug": f"xbrand-{s}"},
         headers=headers,
     )
     assert b.status_code == 201, b.text
@@ -48,7 +53,7 @@ def test_admin_images_and_inventory_flow(client, db):
     # создаём категорию
     c = client.post(
         "/admin/categories",
-        json={"name": "Phones", "slug": "phones"},
+        json={"name": f"Phones-{s}", "slug": f"phones-{s}"},
         headers=headers,
     )
     assert c.status_code == 201, c.text
@@ -58,9 +63,9 @@ def test_admin_images_and_inventory_flow(client, db):
     p = client.post(
         "/admin/products",
         json={
-            "sku": "SKU-1",
-            "name": "Phone 1",
-            "slug": "phone-1",
+            "sku": f"SKU-{s}",
+            "name": f"Phone {s}",
+            "slug": f"phone-{s}",
             "brand_id": brand_id,
             "category_id": cat_id,
             "price_cents": 100000,
@@ -74,11 +79,7 @@ def test_admin_images_and_inventory_flow(client, db):
     # добавляем картинку
     img = client.post(
         f"/admin/products/{prod_id}/images",
-        json={
-            "url": "https://picsum.photos/seed/1/600/400",
-            "is_primary": True,
-            "position": 0,
-        },
+        json={"url": "https://picsum.photos/seed/1/600/400", "is_primary": True, "position": 0},
         headers=headers,
     )
     assert img.status_code == 201, img.text

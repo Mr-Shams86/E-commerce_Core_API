@@ -1,14 +1,14 @@
 import json
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_db
 from app.core.cache import get_redis
 from app.models.catalog import Product
-from app.schemas.catalog import Page
+from app.schemas.catalog import Page, ProductDetail, ProductImageOut, ProductRead
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -84,3 +84,34 @@ def list_products(
             pass
 
     return result
+
+
+@router.get(
+    "/{prod_id}",
+    response_model=ProductDetail,
+    summary="Get Product by ID",
+    description="Карточка товара с изображениями и остатком.",
+    responses={404: {"description": "Not found"}},
+)
+def get_product(prod_id: int, db: Session = Depends(get_db)) -> ProductDetail:
+    obj = (
+        db.query(Product)
+        .options(
+            joinedload(Product.images),
+            joinedload(Product.inventory),
+        )
+        .filter(Product.id == prod_id, Product.is_active.is_(True))
+        .first()
+    )
+    if not obj:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    inv_qty = obj.inventory.qty if obj.inventory else None
+
+    base = ProductRead.model_validate(obj, from_attributes=True).model_dump()
+    return ProductDetail(
+        **base,
+        images=[ProductImageOut.model_validate(i, from_attributes=True) for i in obj.images],
+        inventory_qty=inv_qty,
+        in_stock=(inv_qty or 0) > 0,
+    )

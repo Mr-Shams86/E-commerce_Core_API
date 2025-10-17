@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Optional
 
@@ -48,7 +50,7 @@ class BrandRead(BrandBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# --- Product ---
+# --- Product (базовые DTO) ---
 class ProductBase(BaseModel):
     sku: str
     name: str
@@ -94,6 +96,7 @@ class Page(BaseModel):
     items: list[ProductRead]
 
 
+# --- Media / Inventory ---
 class ProductImageIn(BaseModel):
     url: HttpUrl
     is_primary: bool = False
@@ -109,3 +112,10 @@ class InventoryOut(BaseModel):
     product_id: int
     qty: int
     track_inventory: bool
+
+
+# --- Детальная карточка товара ---
+class ProductDetail(ProductRead):
+    images: list[ProductImageOut] = []
+    inventory_qty: int | None = None
+    in_stock: bool = False
