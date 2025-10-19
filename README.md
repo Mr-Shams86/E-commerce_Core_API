@@ -19,30 +19,68 @@
 
 ```bash
 .
-├── alembic
-│   └── versions/
+.
+├── alembic/                         # ⚙️ Миграции БД (Alembic)
+│   ├── env.py                       # Основная конфигурация Alembic
+│   ├── script.py.mako               # Шаблон для генерации миграций
+│   └── versions/                    # Папка с ревизиями миграций
 │       └── 98848a648c3a_initial_schema_users_catalog_product_.py
-├── app/
+├── alembic.ini                      # Настройки Alembic
+│
+├── app/                             # 💡 Основное приложение FastAPI
+│   ├── api/                         # 🌐 Маршруты и зависимости
+│   │   ├── deps.py                  # Общие зависимости (DB, JWT и т.п.)
+│   │   └── routers/                 # Разделение эндпоинтов
+│   │       ├── admin_catalog.py     # CRUD для админки: бренды, категории, товары
+│   │       ├── auth.py              # Регистрация / логин / JWT
+│   │       ├── health.py            # Проверка статуса сервера
+│   │       ├── products.py          # Публичный каталог + кеш Redis
+│   │       └── users.py             # Пользователи (профиль и т.п.)
+│   │
+│   ├── core/                        # ⚙️ Ядро приложения
+│   │   ├── cache.py                 # Настройка Redis-кеша
+│   │   ├── config.py                # Настройки окружения и переменные
+│   │   └── security.py              # JWT, хэширование паролей
+│   │
+│   ├── db.py                        # Подключение к БД (SQLAlchemy)
+│   ├── main.py                      # Точка входа FastAPI (uvicorn app.main:app)
+│   │
+│   ├── models/                      # 🧱 SQLAlchemy модели
+│   │   ├── catalog.py               # Категории, бренды, товары, изображения, остатки
+│   │   └── user.py                  # Модель пользователя
+│   │
+│   └── schemas/                     # 🧩 Pydantic-схемы (DTO)
+│       ├── catalog.py               # ProductRead, ProductDetail, CategoryRead и др.
+│       └── user.py                  # UserCreate, UserRead, Token и т.п.
+│
+├── docker/                          # 🐳 Docker-конфигурации
+│   └── api.Dockerfile               # Dockerfile для сервиса API
+│
+├── docker-compose.yml               # docker-compose для API, Postgres, Redis
+├── docker-compose.override.yml      # dev-настройки (hot reload, volumes)
+│
+├── Makefile                         # 🚀 Утилиты и короткие команды
+├── pyproject.toml                   # Настройки Ruff, зависимостей и форматирования
+├── requirements.txt                 # Основные зависимости
+├── dev-requirements.txt             # Dev-зависимости (pytest, pre-commit)
+│
+├── scripts/                         # 🧪 Вспомогательные скрипты
+│   └── seed_demo_data.py            # Заполнение демо-данными
+│
+├── tests/                           # ✅ Тесты (pytest)
 │   ├── api/
-│   │   ├── routers/
-│   │   │   ├── admin_catalog.py   # CRUD для админки (бренды, категории, товары, изображения, остатки)
-│   │   │   ├── products.py        # Публичный каталог + Redis кеш
-│   │   │   ├── auth.py, users.py  # JWT аутентификация
-│   │   └── deps.py
-│   ├── core/                      # Настройки, JWT, Redis
-│   ├── models/                    # SQLAlchemy модели
-│   └── schemas/                   # Pydantic DTO (ProductRead, ProductDetail и т.д.)
-├── scripts/
-│   └── seed_demo_data.py          # Сидинг демо-данных
-├── tests/api/                     # Pytest тесты API
-│   ├── test_admin_media_inventory.py
-│   ├── test_products_detail.py
-│   └── test_products.py
-├── docker/
-│   └── api.Dockerfile
-├── docker-compose.yml
-├── Makefile
-└── README.md
+│   │   ├── test_auth.py             # Тесты регистрации/логина
+│   │   ├── test_products.py         # Тест листинга товаров
+│   │   ├── test_products_detail.py  # Тест карточки товара
+│   │   └── test_admin_media_inventory.py  # Тест изображений и остатков
+│   └── conftest.py                  # Общие фикстуры pytest
+│
+├── comands.txt                      # 🧠 Подсказки и полезные команды
+├── structure.txt                    # Текущий файл со структурой проекта
+├── pytest.ini                       # Конфигурация pytest
+├── README.md                        # Документация проекта
+└── requirements.lock                # (опционально) зафиксированные версии зависимостей
+
 
 ```
 
@@ -61,9 +99,9 @@ docker compose exec api python scripts/seed_demo_data.py
 
 Доступы:
 
-* 🌐 API: [http://localhost:8000]
-* 📘 Swagger: [http://localhost:8000/docs]
-* ❤️ Health: [http://localhost:8000/healthz]
+* 🌐 API: http://localhost:8000
+* 📘 Swagger: http://localhost:8000/docs
+* ❤️ Health: http://localhost:8000/healthz
 
 ## Переменные окружения
 
