@@ -3,107 +3,105 @@
 * [![CI](https://github.com/Mr-Shams86/E-commerce_Core_API/actions/workflows/ci.yml/badge.svg)](https://github.com/Mr-Shams86/E-commerce_Core_API/actions/workflows/ci.yml)
 
 
-* Минимальное ядро e-commerce API: аутентификация (JWT), каталог (категории, бренды, товары), изображения товаров, остатки на складе, публичный листинг с фильтрами/сортировкой и кешированием через Redis.
-* Полностью изолировано в Docker.
+* A minimal yet production-ready e-commerce API core: JWT-based authentication, product catalog (categories, brands, items), image handling, inventory management, public listings with filtering and sorting, and Redis-powered caching.
+* Fully containerized with Docker.
 
 ## ⚙️ Stack
 
 - **FastAPI** + **Uvicorn**
 - **SQLAlchemy** + **Alembic** (PostgreSQL)
-- **Redis** — кеширование публичного листинга
+- **Redis** — Caching of public listings
 - **PyJWT (python-jose)** + **passlib** — JWT + bcrypt
 - **Docker / docker-compose**
-- **Ruff**, **pre-commit**, **GitHub Actions** — автолинтинг и CI
+- **Ruff**, **pre-commit**, **GitHub Actions** — Auto linting & CI
 
-## 📂 Структура проекта
+## 📂 Project Structure
 
 ```bash
 .
-.
-├── alembic/                         # ⚙️ Миграции БД (Alembic)
-│   ├── env.py                       # Основная конфигурация Alembic
-│   ├── script.py.mako               # Шаблон для генерации миграций
-│   └── versions/                    # Папка с ревизиями миграций
+├── alembic/                          # ⚙️ DB migrations (Alembic)
+│   ├── env.py                         # Main Alembic configuration
+│   ├── script.py.mako                 # Template for migration generation
+│   └── versions/                      # Migration revisions directory
 │       └── 98848a648c3a_initial_schema_users_catalog_product_.py
-├── alembic.ini                      # Настройки Alembic
+├── alembic.ini                        # Alembic settings
 │
-├── app/                             # 💡 Основное приложение FastAPI
-│   ├── api/                         # 🌐 Маршруты и зависимости
-│   │   ├── deps.py                  # Общие зависимости (DB, JWT и т.п.)
-│   │   └── routers/                 # Разделение эндпоинтов
-│   │       ├── admin_catalog.py     # CRUD для админки: бренды, категории, товары
-│   │       ├── auth.py              # Регистрация / логин / JWT
-│   │       ├── health.py            # Проверка статуса сервера
-│   │       ├── products.py          # Публичный каталог + кеш Redis
-│   │       └── users.py             # Пользователи (профиль и т.п.)
+├── app/                               # 💡 Main FastAPI application
+│   ├── api/                           # 🌐 Routes and dependencies
+│   │   ├── deps.py                    # Common dependencies (DB, JWT, etc.)
+│   │   └── routers/                   # Endpoints separation
+│   │       ├── admin_catalog.py       # Admin CRUD: brands, categories, products
+│   │       ├── auth.py                # Registration / login / JWT
+│   │       ├── health.py              # Server health check
+│   │       ├── products.py            # Public catalog + Redis cache
+│   │       └── users.py               # Users (profiles, etc.)
 │   │
-│   ├── core/                        # ⚙️ Ядро приложения
-│   │   ├── cache.py                 # Настройка Redis-кеша
-│   │   ├── config.py                # Настройки окружения и переменные
-│   │   └── security.py              # JWT, хэширование паролей
+│   ├── core/                          # ⚙️ Core application logic
+│   │   ├── cache.py                   # Redis cache configuration
+│   │   ├── config.py                  # Environment settings and variables
+│   │   └── security.py                # JWT, password hashing
 │   │
-│   ├── db.py                        # Подключение к БД (SQLAlchemy)
-│   ├── main.py                      # Точка входа FastAPI (uvicorn app.main:app)
+│   ├── db.py                          # Database connection (SQLAlchemy)
+│   ├── main.py                        # FastAPI entry point (uvicorn app.main:app)
 │   │
-│   ├── models/                      # 🧱 SQLAlchemy модели
-│   │   ├── catalog.py               # Категории, бренды, товары, изображения, остатки
-│   │   └── user.py                  # Модель пользователя
+│   ├── models/                        # 🧱 SQLAlchemy models
+│   │   ├── catalog.py                 # Categories, brands, products, images, stock
+│   │   └── user.py                    # User model
 │   │
-│   └── schemas/                     # 🧩 Pydantic-схемы (DTO)
-│       ├── catalog.py               # ProductRead, ProductDetail, CategoryRead и др.
-│       └── user.py                  # UserCreate, UserRead, Token и т.п.
+│   └── schemas/                       # 🧩 Pydantic schemas (DTOs)
+│       ├── catalog.py                 # ProductRead, ProductDetail, CategoryRead, etc.
+│       └── user.py                    # UserCreate, UserRead, Token, etc.
 │
-├── docker/                          # 🐳 Docker-конфигурации
-│   └── api.Dockerfile               # Dockerfile для сервиса API
+├── docker/                            # 🐳 Docker configurations
+│   └── api.Dockerfile                 # Dockerfile for API service
 │
-├── docker-compose.yml               # docker-compose для API, Postgres, Redis
-├── docker-compose.override.yml      # dev-настройки (hot reload, volumes)
+├── docker-compose.yml                 # docker-compose for API, Postgres, Redis
+├── docker-compose.override.yml        # Dev settings (hot reload, volumes)
 │
-├── Makefile                         # 🚀 Утилиты и короткие команды
-├── pyproject.toml                   # Настройки Ruff, зависимостей и форматирования
-├── requirements.txt                 # Основные зависимости
-├── dev-requirements.txt             # Dev-зависимости (pytest, pre-commit)
+├── Makefile                           # 🚀 Utilities and shortcuts
+├── pyproject.toml                     # Ruff, dependencies, formatting settings
+├── requirements.txt                   # Main dependencies
+├── dev-requirements.txt               # Dev dependencies (pytest, pre-commit)
 │
-├── scripts/                         # 🧪 Вспомогательные скрипты
-│   └── seed_demo_data.py            # Заполнение демо-данными
+├── scripts/                           # 🧪 Helper scripts
+│   └── seed_demo_data.py              # Seed demo data
 │
-├── tests/                           # ✅ Тесты (pytest)
+├── tests/                             # ✅ Tests (pytest)
 │   ├── api/
-│   │   ├── test_auth.py             # Тесты регистрации/логина
-│   │   ├── test_products.py         # Тест листинга товаров
-│   │   ├── test_products_detail.py  # Тест карточки товара
-│   │   └── test_admin_media_inventory.py  # Тест изображений и остатков
-│   └── conftest.py                  # Общие фикстуры pytest
+│   │   ├── test_auth.py               # Registration/login tests
+│   │   ├── test_products.py           # Product listing tests
+│   │   ├── test_products_detail.py    # Product detail tests
+│   │   └── test_admin_media_inventory.py  # Images and stock tests
+│   └── conftest.py                    # Common pytest fixtures
 │
-├── comands.txt                      # 🧠 Подсказки и полезные команды
-├── structure.txt                    # Текущий файл со структурой проекта
-├── pytest.ini                       # Конфигурация pytest
-├── README.md                        # Документация проекта
-└── requirements.lock                # (опционально) зафиксированные версии зависимостей
-
+├── comands.txt                        # 🧠 Hints and useful commands
+├── structure.txt                      # Current project structure file
+├── pytest.ini                         # Pytest configuration
+├── README.md                          # Project documentation
+└── requirements.lock                  # (Optional) pinned dependency versions
 
 ```
 
-## Быстрый старт
+## 🚀 Quick start
 
 ```bash
-# 1) .env (см. ниже) — создайте при необходимости из примера
+# 1) .env (see below) — create from the example if needed
 cp .env.example .env
 
-# 2) Запуск
+# 2) Run
 docker compose up --build
 
-# 3) (опционально) демо-данные
+# 3) (optional) demo data
 docker compose exec api python scripts/seed_demo_data.py
 ```
 
-Доступы:
+## Access:
 
 * 🌐 API: http://localhost:8000
 * 📘 Swagger: http://localhost:8000/docs
 * ❤️ Health: http://localhost:8000/healthz
 
-## Переменные окружения
+## Environment variables
 
 `.env` (базовый набор):
 
@@ -128,28 +126,29 @@ SECRET_KEY=change_me_long_random
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
-# UID / GID (для корректных прав в контейнере)
+# UID / GID (for correct container permissions)
 UID=1000
 GID=1000
 
-> `UID`/`GID` подставьте под своего пользователя (`id -u` / `id -g`).
-> В `docker-compose.yml` сервис `api` запускается с `user: "${UID}:${GID}"`.
+> `Set UID/GID to match your user (id -u / id -g)`.
+> `The api service in docker-compose.yml runs with user: "${UID}:${GID}"`.
 
-## 🧱 Миграции (Alembic)
+## 🧱 Migrations (Alembic)
 
 ```bash
-# создать миграцию из текущих моделей
+# create a migration from current models
 docker compose exec api alembic revision -m "my change" --autogenerate
 
-# применить все миграции
+# apply all migrations
 docker compose exec api alembic upgrade head
 
-# история / текущая ревизия
+# history / current revision
 docker compose exec api alembic history
 docker compose exec api alembic current
+
 ```
 
-### Чистый старт БД
+## Clean DB start
 
 ```bash
 docker compose down
@@ -157,66 +156,70 @@ docker volume rm e-commerce_core_api_pgdata
 docker compose up --build
 ```
 
-## 🔐 Аутентификация (JWT)
+## 🔐 Authentication (JWT)
 
-1. **Регистрация**: `POST /auth/register` — создаёт пользователя (`is_superuser=false`).
-2. **Логин**: `POST /auth/login` (`application/x-www-form-urlencoded`) → `{"access_token": "...", "token_type": "bearer"}`.
-3. В Swagger нажмите **Authorize** и вставьте `Bearer <access_token>`.
-4. **Проверка**: `GET /users/me`.
+1. **Register**: `POST /auth/register` — creates a user (`is_superuser=false`).
+2. **Login**: `POST /auth/login` (`application/x-www-form-urlencoded`) → `{"access_token": "...", "token_type": "bearer"}`.
+3. In Swagger click **Authorize** and paste `Bearer <access_token>`.
+4. **Check**: `GET /users/me`.
 
-### 🧑‍💼 Суперпользователь
+## 🧑‍💼 Superuser
 
-Админ-эндпоинты каталога требуют `is_superuser=true`. В dev можно пометить юзера напрямую:
+* Admin catalog endpoints require is_superuser=true.
+* In dev you can mark a user manually:
 
 ```bash
 docker compose exec -T db sh -lc \
 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "UPDATE users SET is_superuser = true WHERE email = '\''you@example.com'\'';"'
 ```
 
-## 🧩 Каталог (admin, только superuser)
+## Catalog (admin, superuser only)
 
-* **Категории**
+* **Categories**
 
-  * `POST /admin/categories` — создать
-  * `PATCH /admin/categories/{cat_id}` — частичное обновление
-  * `DELETE /admin/categories/{cat_id}` — удалить
-* **Бренды**
+  * `POST /admin/categories` — create
+  * `PATCH /admin/categories/{cat_id}` — partial update
+  * `DELETE /admin/categories/{cat_id}` — delete
+
+* **Brands**
 
   * `POST /admin/brands`
   * `PATCH /admin/brands/{brand_id}`
   * `DELETE /admin/brands/{brand_id}`
-* **Товары**
+
+* **Products**
 
   * `POST /admin/products`
   * `PATCH /admin/products/{prod_id}`
   * `DELETE /admin/products/{prod_id}`
-* **Картинки товара**
 
-  * `POST /admin/products/{prod_id}/images` — добавить URL-картинку (поддержка `is_primary`, `position`)
+* **Product images**
 
-* **Остатки**
+  * `POST /admin/products/{prod_id}/images` — add image URL (supports is_primary, position)
 
-  * `PATCH /admin/products/{prod_id}/inventory?qty=5&track_inventory=true` — upsert остатков
+* **Inventory**
 
-⚠️ sku и slug уникальны.
-brand_id и category_id должны ссылаться на существующие записи.
+  * `PATCH /admin/products/{prod_id}/inventory?qty=5&track_inventory=true` — inventory upsert
 
-**Подсказки для PATCH**
-Передавайте только изменяемые поля.
-`brand_id`/`category_id` — должны ссылаться на существующие записи.
-`sku` и `slug` — уникальны.
+## ⚠️ sku and slug are unique.
+* brand_id and category_id must reference existing records.
 
-## 🛒 Публичный листинг товаров
+**PATCH hints**
+* Only send fields that should be changed.
+`brand_id`/`category_id` — must reference existing records.
+`sku` and `slug` — must be unique.
 
-`GET /products` — фильтры:
+## 🛒 Public product listing
 
-* `q` — поиск по  поиск по имени `name`/`slug`
-* `category_id`,  фильтр по категории
-* `brand_id`      фильтр по бренду
-* `sort`:         `price_asc`, `price_desc`, `created_desc` (по умолчанию), `created_asc`
-* `limit`         пагинация (по умолчанию 20, максимум 100), `offset` (по умолчанию 0)
+`GET /products` — filters:
 
-**Ответ** (пэйджинг):
+* q — search by name / slug
+* category_id — filter by category
+* brand_id — filter by brand
+* sort: price_asc, price_desc, created_desc (default), created_asc
+* limit — pagination (default 20, max 100), offset (default 0)
+
+**Response** (pagination):
 
 ```json
 {
@@ -226,9 +229,9 @@ brand_id и category_id должны ссылаться на существую�
   "items": [ { ...ProductRead }, ... ]
 }
 ```
-`GET /products/{prod_id}` — карточка товара
+`GET /products/{prod_id}` — product details
 
-**Ответ**
+**Response**
 * {
   "id": 1,
   "sku": "SKU-1",
@@ -247,79 +250,76 @@ brand_id и category_id должны ссылаться на существую�
 }
 
 
-### Кеширование (Redis)
+## 🔁 Caching (Redis)
+* /products listing is cached for 120 seconds (the key includes filters/sort/pagination)
 
-* Листинг `/products` кешируется на **120 секунд** (ключ включает фильтры/сортировку/пагинацию).
-* Любая админская операция по категориям/брендам/товарам/картинкам/остаткам **инвалидирует** ключи `products:*`.
+* Any admin operation on categories/brands/products/images/inventory invalidates products:* keys**инвалидирует** ключи `products:*`.
 
-## 🧪 Примеры запросов
-# Регистрация
+## 🧪 Request examples
+
+# Register
 curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@example.com","password":"x123456"}'
 
-# Логин
+# Login
 TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d 'username=demo@example.com&password=x123456' | jq -r .access_token)
 
-# Создать бренд
+# Create a brand
 curl -X POST http://localhost:8000/admin/brands \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"name":"XBrand","slug":"xbrand"}'
 
 
-## Полезные команды
+## Useful commands
 
 ```bash
-# Логи API
+# API logs
 docker compose logs -f api
 
-# Шелл в контейнере API
+# Shell inside API container
 docker compose exec api bash
 
-# Таблицы в Postgres
+# Tables in Postgres
 docker compose exec -T db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\dt"'
+
 ```
+## 🧠 Development & tests
 
-## 🧠 Разработка и тесты
+* Hot-reload is enabled (volumes for app/ and alembic/ are mounted).
+* Pre-commit: Ruff formats/lints on commit.
 
-* Hot-reload включён (тома с `app/` и `alembic/` смонтированы).
-* Pre-commit: Ruff форматирует/линтит при коммите.
+## Tests & CI
 
-## Тесты и CI
-
-* Локально:
+* Locally:
 
 ```bash
 docker compose exec -T api pytest -q
 ```
 
-CI (GitHub Actions, файл `.github/workflows/ci.yml`):
+* CI (GitHub Actions, .github/workflows/ci.yml):
 
 * `ruff check .`
 * `ruff format --check .`
 * `pytest .`
 
-## 🚑 Траблшутинг
+## 🚑 Troubleshooting
 
-* **403 Forbidden** на `/admin/**`: текущий пользователь не `is_superuser=true`.
-* **409 Conflict** при создании/изменении товара: конфликт `sku` или `slug`.
-* **500 Internal Server Error** при PATCH/POST:
+* **403 Forbidden on /admin/**: current user is not is_superuser=true
+* **409 Conflict on product create/update**: sku or slug conflict
+* **500 Internal Server Error on PATCH/POST**:
 
-  * несуществующие `brand_id`/`category_id`;
-  * нарушение уникальных ограничений.
-  * **Swagger /docs не открывается**:
+* non-existing brand_id / category_id
 
-  * проверь `docker compose ps` (api должен слушать `0.0.0.0:8000`);
-  * убедись, что порт 8000 свободен.
+* unique constraint violation
 
-## 🧭 Roadmap
-- [ ] Корзина и заказы
-- [ ] RBAC (admin / manager / user)
-- [ ] MinIO / S3 для картинок
-- [ ] Полнотекстовый поиск (pg_trgm / FTS)
-- [ ] Продовый деплой (Railway / Render / VPS)
+* Swagger /docs is not opening:
 
-## 🧑‍💻 Автор: Samer Shamsi
-## 📦Репозиторий:https://github.com/Mr-Shams86/E-commerce_Core_API
+* check docker compose ps (api must listen on 0.0.0.0:8000)
+
+* make sure port 8000 is free
+
+## 🧑‍💻 Author: ๛Samer Shams๖
+## 📦 Repository: https://github.com/Mr-Shams86/E-commerce_Core_API
