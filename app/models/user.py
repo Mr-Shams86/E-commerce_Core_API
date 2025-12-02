@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import Boolean, DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
+from app.models.order import Order
 
 
 class User(Base):
@@ -15,3 +19,8 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    orders: Mapped[List[Order]] = relationship(
+        "Order",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
