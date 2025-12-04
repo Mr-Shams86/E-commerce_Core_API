@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.api.services.orders import create_order_for_user, get_orders_for_user
+from app.api.services.payments import pay_order_for_user
 from app.models import User
 from app.schemas.order import OrderCreate, OrderRead
+from app.schemas.payment import PaymentRead
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -39,3 +41,18 @@ def list_my_orders(
 ) -> List[OrderRead]:
     orders = get_orders_for_user(db, current_user.id)
     return orders
+
+
+@router.post(
+    "/{order_id}/pay",
+    response_model=PaymentRead,
+    status_code=201,
+    summary="Pay for an order of current user",
+)
+def pay_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PaymentRead:
+    payment = pay_order_for_user(db, current_user.id, order_id)
+    return payment
