@@ -45,7 +45,8 @@ High-level components:
 
 GitHub renders Mermaid diagrams natively.
 
-```erDiagram
+```mermaid
+erDiagram
 
     USER ||--o{ ORDER : "orders"
     USER {
@@ -128,7 +129,6 @@ GitHub renders Mermaid diagrams natively.
         int qty
         boolean track_inventory
     }
-
 
 ```
 
@@ -543,12 +543,12 @@ CI (GitHub Actions, .github/workflows/ci.yml):
 
 The core already includes:
 
-✔ Full product catalog (categories, brands, products, images)
-✔ Inventory management
-✔ Public product listing with Redis caching
-✔ Orders + OrderItems
-✔ Payments subsystem (fake provider for demo)
-✔ Authentication & superuser admin flows
+- ✔ Full product catalog (categories, brands, products, images)
+- ✔ Inventory management
+- ✔ Public product listing with Redis caching
+- ✔ Orders + OrderItems
+- ✔ Payments subsystem (fake provider for demo)
+- ✔ Authentication & superuser admin flows
 
 Upcoming improvements:
 
