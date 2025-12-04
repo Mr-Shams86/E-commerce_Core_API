@@ -45,10 +45,9 @@ High-level components:
 
 GitHub renders Mermaid diagrams natively.
 
-```mermaid
-erDiagram
+```erDiagram
 
-    USER ||--o{ PRODUCT : "created (optional)"
+    USER ||--o{ ORDER : "orders"
     USER {
         int id PK
         string email
@@ -56,22 +55,53 @@ erDiagram
         boolean is_superuser
     }
 
+    ORDER ||--o{ ORDER_ITEM : "items"
+    ORDER ||--o{ PAYMENT : "payments"
+    ORDER {
+        int id PK
+        int user_id FK
+        int total_cents
+        string status  "new | confirmed | canceled"
+        datetime created_at
+        datetime updated_at
+    }
+
+    ORDER_ITEM {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        int price_cents
+    }
+
+    PAYMENT {
+        int id PK
+        int order_id FK
+        int amount_cents
+        string provider
+        string provider_payment_id
+        string status  "pending | paid | failed"
+        datetime created_at
+        datetime updated_at
+    }
+
     CATEGORY ||--o{ PRODUCT : "category"
+    BRAND ||--o{ PRODUCT : "brand"
+
+    PRODUCT ||--o{ PRODUCT_IMAGE : "images"
+    PRODUCT ||--|| INVENTORY : "stock"
+
     CATEGORY {
         int id PK
         string name
         string slug
     }
 
-    BRAND ||--o{ PRODUCT : "brand"
     BRAND {
         int id PK
         string name
         string slug
     }
-
-    PRODUCT ||--o{ PRODUCT_IMAGE : "images"
-    PRODUCT ||--|| INVENTORY : "stock"
 
     PRODUCT {
         int id PK
@@ -99,6 +129,7 @@ erDiagram
         boolean track_inventory
     }
 
+
 ```
 
 ## ⚙️ Stack
@@ -114,66 +145,72 @@ erDiagram
 
 ```bash
 .
-├── alembic/                          # ⚙️ DB migrations (Alembic)
-│   ├── env.py                         # Main Alembic configuration
-│   ├── script.py.mako                 # Template for migration generation
-│   └── versions/                      # Migration revisions directory
-│       └── 98848a648c3a_initial_schema_users_catalog_product_.py
-├── alembic.ini                        # Alembic settings
-│
-├── app/                               # 💡 Main FastAPI application
-│   ├── api/                           # 🌐 Routes and dependencies
-│   │   ├── deps.py                    # Common dependencies (DB, JWT, etc.)
-│   │   └── routers/                   # Endpoints separation
-│   │       ├── admin_catalog.py       # Admin CRUD: brands, categories, products
-│   │       ├── auth.py                # Registration / login / JWT
-│   │       ├── health.py              # Server health check
-│   │       ├── products.py            # Public catalog + Redis cache
-│   │       └── users.py               # Users (profiles, etc.)
-│   │
-│   ├── core/                          # ⚙️ Core application logic
-│   │   ├── cache.py                   # Redis cache configuration
-│   │   ├── config.py                  # Environment settings and variables
-│   │   └── security.py                # JWT, password hashing
-│   │
-│   ├── db.py                          # Database connection (SQLAlchemy)
-│   ├── main.py                        # FastAPI entry point (uvicorn app.main:app)
-│   │
-│   ├── models/                        # 🧱 SQLAlchemy models
-│   │   ├── catalog.py                 # Categories, brands, products, images, stock
-│   │   └── user.py                    # User model
-│   │
-│   └── schemas/                       # 🧩 Pydantic schemas (DTOs)
-│       ├── catalog.py                 # ProductRead, ProductDetail, CategoryRead, etc.
-│       └── user.py                    # UserCreate, UserRead, Token, etc.
-│
-├── docker/                            # 🐳 Docker configurations
-│   └── api.Dockerfile                 # Dockerfile for API service
-│
-├── docker-compose.yml                 # docker-compose for API, Postgres, Redis
-├── docker-compose.override.yml        # Dev settings (hot reload, volumes)
-│
-├── Makefile                           # 🚀 Utilities and shortcuts
-├── pyproject.toml                     # Ruff, dependencies, formatting settings
-├── requirements.txt                   # Main dependencies
-├── dev-requirements.txt               # Dev dependencies (pytest, pre-commit)
-│
-├── scripts/                           # 🧪 Helper scripts
-│   └── seed_demo_data.py              # Seed demo data
-│
-├── tests/                             # ✅ Tests (pytest)
-│   ├── api/
-│   │   ├── test_auth.py               # Registration/login tests
-│   │   ├── test_products.py           # Product listing tests
-│   │   ├── test_products_detail.py    # Product detail tests
-│   │   └── test_admin_media_inventory.py  # Images and stock tests
-│   └── conftest.py                    # Common pytest fixtures
-│
-├── commands.txt                        # 🧠 Hints and useful commands
-├── structure.txt                      # Current project structure file
-├── pytest.ini                         # Pytest configuration
-├── README.md                          # Project documentation
-└── requirements.lock                  # (Optional) pinned dependency versions
+├── alembic
+│   ├── env.py
+│   ├── README
+│   ├── script.py.mako
+│   └── versions
+│       ├── 1575d40ca19b_add_orders_tables.py
+│       ├── 98848a648c3a_initial_schema_users_catalog_product_.py
+│       └── c1edb345f74c_add_payments_table.py
+├── alembic.ini
+├── app
+│   ├── api
+│   │   ├── deps.py
+│   │   ├── __init__.py
+│   │   ├── routers
+│   │   │   ├── admin_catalog.py
+│   │   │   ├── auth.py
+│   │   │   ├── health.py
+│   │   │   ├── __init__.py
+│   │   │   ├── orders.py
+│   │   │   ├── products.py
+│   │   │   └── users.py
+│   │   └── services
+│   │       ├── __init__.py
+│   │       ├── orders.py
+│   │       └── payments.py
+│   ├── core
+│   │   ├── cache.py
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── db.py
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models
+│   │   ├── catalog.py
+│   │   ├── __init__.py
+│   │   ├── order.py
+│   │   ├── payment.py
+│   │   └── user.py
+│   └── schemas
+│       ├── catalog.py
+│       ├── __init__.py
+│       ├── order.py
+│       ├── payment.py
+│       └── user.py
+├── commands.txt
+├── dev-requirements.txt
+├── docker
+│   └── api.Dockerfile
+├── docker-compose.override.yml
+├── docker-compose.yml
+├── Makefile
+├── pyproject.toml
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── scripts
+│   └── seed_demo_data.py
+├── structure.txt
+└── tests
+    ├── api
+    │   ├── test_admin_media_inventory.py
+    │   ├── test_auth.py
+    │   ├── test_products_detail.py
+    │   └── test_products.py
+    └── conftest.py
+
 
 ```
 
@@ -302,6 +339,94 @@ docker compose exec -T db sh -lc \
 `brand_id`/`category_id` — must reference existing records.
 `sku` and `slug` — must be unique.
 
+## 🧾 Orders (Order Creation)
+
+* **Create an order**
+ * POST /orders
+
+**Payload**:
+```json
+  {
+    "items": [
+      {"product_id": 1, "quantity": 2},
+      {"product_id": 5, "quantity": 1}
+    ]
+  }
+  ```
+
+* The API automatically:
+
+* validates that products exist
+
+* checks inventory stock
+
+* deducts inventory quantities
+
+* captures a price snapshot per product
+
+* calculates the final total_cents
+
+* creates an Order + OrderItems
+
+**Response**:
+```json
+  {
+    "id": 10,
+    "status": "new",
+    "total_cents": 150000,
+    "created_at": "...",
+    "items": [
+      {"id": 1, "product_id": 1, "quantity": 2, "price_cents": 50000},
+      {"id": 2, "product_id": 5, "quantity": 1, "price_cents": 50000}
+    ]
+  }
+  ```
+
+
+## 📜 My Orders
+
+ `GET /orders/me`
+* Returns all orders of the authenticated user (sorted from newest to oldest).
+
+
+## 💳 Payments (Order Payment)
+
+* Payment endpoint:
+ `POST /orders/{order_id}/pay`
+
+* This uses a fake but logically correct payment provider:
+
+* creates a Payment record
+
+* generates provider_payment_id = test-uuid4
+
+* marks payment as paid
+
+* updates the order status to confirmed
+
+**Response example**:
+```json
+  {
+    "id": 1,
+    "order_id": 10,
+    "amount_cents": 150000,
+    "provider": "test",
+    "provider_payment_id": "test-551ba1ba-...",
+    "status": "paid",
+    "created_at": "..."
+  }
+  ```
+
+* Validation rules:
+
+* you cannot pay someone else’s order
+
+* you cannot pay an order whose status is not new
+
+* you cannot pay twice
+
+* you cannot pay an order where total_cents = 0
+
 
 ## 🛒 Public product listing
 `GET /products` — filters:
@@ -320,9 +445,11 @@ docker compose exec -T db sh -lc \
   "items": [ { ...ProductRead }, ... ]
 }
 ```
+
 `GET /products/{prod_id}` — product details
 
 **Response**
+```json
 * {
   "id": 1,
   "sku": "SKU-1",
@@ -339,6 +466,7 @@ docker compose exec -T db sh -lc \
   "inventory_qty": 5,
   "in_stock": true
 }
+```
 
 
 ## 🔁 Caching (Redis)
@@ -413,17 +541,27 @@ CI (GitHub Actions, .github/workflows/ci.yml):
 
 ## 🧭 Roadmap (future ideas)
 
-The core is already production-ready but can be extended with:
+The core already includes:
 
-- [ ] Order service (orders + order_items)
+✔ Full product catalog (categories, brands, products, images)
+✔ Inventory management
+✔ Public product listing with Redis caching
+✔ Orders + OrderItems
+✔ Payments subsystem (fake provider for demo)
+✔ Authentication & superuser admin flows
+
+Upcoming improvements:
+
+- [ ] Asynchronous background tasks (email notifications, stock sync)
 - [ ] Payment integration (Stripe / PayPal sandbox)
 - [ ] Admin dashboard (React / Next.js)
 - [ ] Product recommendations (simple scoring / Redis-based)
 - [ ] Upload API for real images (S3 / MinIO)
 - [ ] Background tasks (notifications, async stock sync)
 - [ ] Webhooks for events (product.created, order.created, etc.)
+- [ ] Microservice extraction (catalog, orders, payments)
+- [ ] Recommendation engine (Redis-based)
 
-These features are optional but look great in a portfolio.
 
 ## 🧑‍💻 Author: ๛Samer Shams๖
 ## 📦 Repository: https://github.com/Mr-Shams86/E-commerce_Core_API
