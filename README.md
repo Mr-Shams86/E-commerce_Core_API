@@ -557,10 +557,8 @@ Upcoming improvements:
 - [ ] Admin dashboard (React / Next.js)
 - [ ] Product recommendations (simple scoring / Redis-based)
 - [ ] Upload API for real images (S3 / MinIO)
-- [ ] Background tasks (notifications, async stock sync)
 - [ ] Webhooks for events (product.created, order.created, etc.)
 - [ ] Microservice extraction (catalog, orders, payments)
-- [ ] Recommendation engine (Redis-based)
 
 
 ## 🧑‍💻 Author: ๛Samer Shams๖
