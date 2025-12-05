@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,6 +30,23 @@ class OrderRead(BaseModel):
     status: OrderStatus
     total_cents: int
     created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class AdminOrderUpdate(BaseModel):
+    status: OrderStatus
+    items: Optional[List[OrderItemRead]]
+
+
+class AdminOrderRead(BaseModel):
+    id: int
+    user_id: int
+    status: OrderStatus
+    total_cents: int
+    created_at: datetime
+    items: list[OrderItemRead]
 
     class Config:
         orm_mode = True
