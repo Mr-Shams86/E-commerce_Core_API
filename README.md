@@ -160,6 +160,7 @@ erDiagram
 │   │   ├── __init__.py
 │   │   ├── routers
 │   │   │   ├── admin_catalog.py
+│   │   │   ├── admin_orders.py
 │   │   │   ├── auth.py
 │   │   │   ├── health.py
 │   │   │   ├── __init__.py
@@ -334,7 +335,6 @@ docker compose exec -T db sh -lc \
 * brand_id and category_id must reference existing records.
 
 **PATCH hints**
-
 * Only send fields that should be changed.
 `brand_id`/`category_id` — must reference existing records.
 `sku` and `slug` — must be unique.
@@ -355,17 +355,11 @@ docker compose exec -T db sh -lc \
   ```
 
 * The API automatically:
-
 * validates that products exist
-
 * checks inventory stock
-
 * deducts inventory quantities
-
 * captures a price snapshot per product
-
 * calculates the final total_cents
-
 * creates an Order + OrderItems
 
 **Response**:
@@ -384,24 +378,90 @@ docker compose exec -T db sh -lc \
 
 
 ## 📜 My Orders
-
  `GET /orders/me`
 * Returns all orders of the authenticated user (sorted from newest to oldest).
 
+## 📦 Admin Orders API (Superuser Only)
+
+* This module provides the core administrative functionality required to manage customer orders.
+* Only superusers may access these endpoints.
+
+## 📋 List all orders
+`GET /admin/orders`
+
+**Query parameters**:
+* status — filter by order status (new, confirmed, canceled)
+* user_id — filter by a specific customer
+
+**Example**:
+  `GET /admin/orders?status=new`
+
+**Response**:
+```json
+  [
+  {
+    "id": 12,
+    "user_id": 4,
+    "status": "new",
+    "total_cents": 120000,
+    "created_at": "2025-12-05T16:20:44.120Z",
+    "items": [
+      {"id": 1, "product_id": 3, "quantity": 2, "price_cents": 20000},
+      {"id": 2, "product_id": 1, "quantity": 1, "price_cents": 80000}
+    ]
+  }
+]
+```
+* This endpoint returns all orders, sorted from newest to oldest.
+
+## ✏️ Update order status
+`PATCH /admin/orders/{order_id}`
+* Admins may update an order’s status:
+
+**Payload**:
+```json
+  {
+  "status": "confirmed"
+}
+```
+
+**Response**:
+```json
+  {
+  "id": 12,
+  "user_id": 4,
+  "status": "confirmed",
+  "total_cents": 120000,
+  "created_at": "2025-12-05T16:20:44.120Z",
+  "items": [
+    {"id": 1, "product_id": 3, "quantity": 2, "price_cents": 20000},
+    {"id": 2, "product_id": 1, "quantity": 1, "price_cents": 80000}
+  ]
+}
+```
+**Validation rules**:
+* Only superusers can access this endpoint.
+* If the order does not exist → 404.
+* Status must be a valid enum value.
+* Business restrictions can be extended later (shipped, delivered, refunded, etc.).
+
+## 🔒 Authentication
+* These endpoints rely on:
+* Depends(require_superuser)
+
+**Meaning**:
+* JWT must be valid.
+* User must exist.
+* User must have is_superuser = true.
 
 ## 💳 Payments (Order Payment)
 
 * Payment endpoint:
  `POST /orders/{order_id}/pay`
-
 * This uses a fake but logically correct payment provider:
-
 * creates a Payment record
-
 * generates provider_payment_id = test-uuid4
-
 * marks payment as paid
-
 * updates the order status to confirmed
 
 **Response example**:
@@ -417,16 +477,11 @@ docker compose exec -T db sh -lc \
   }
   ```
 
-* Validation rules:
-
+**Validation rules**:
 * you cannot pay someone else’s order
-
 * you cannot pay an order whose status is not new
-
 * you cannot pay twice
-
 * you cannot pay an order where total_cents = 0
-
 
 ## 🛒 Public product listing
 `GET /products` — filters:
@@ -468,11 +523,9 @@ docker compose exec -T db sh -lc \
 }
 ```
 
-
 ## 🔁 Caching (Redis)
 * /products listing is cached for 120 seconds (the key includes filters/sort/pagination)
 * Any admin operation on categories, brands, products, images or inventory invalidates `products:*` keys.
-
 
 ## 🧪 Request examples
 
@@ -494,7 +547,6 @@ curl -X POST http://localhost:8000/admin/brands \
   -d '{"name":"XBrand","slug":"xbrand"}'
 ```
 
-
 ## Useful commands
 
 ```bash
@@ -510,12 +562,10 @@ docker compose exec -T db sh -lc \
 ```
 
 ## 🧠 Development & tests
-
 * Hot-reload is enabled (volumes for app/ and alembic/ are mounted).
 * Pre-commit: Ruff formats/lints on commit.
 
 ## Tests & CI
-
 * Locally:
 
 ```bash
@@ -541,7 +591,7 @@ CI (GitHub Actions, .github/workflows/ci.yml):
 
 ## 🧭 Roadmap (future ideas)
 
-The core already includes:
+### ✔ The core already includes:
 
 - ✔ Full product catalog (categories, brands, products, images)
 - ✔ Inventory management
@@ -550,15 +600,22 @@ The core already includes:
 - ✔ Payments subsystem (fake provider for demo)
 - ✔ Authentication & superuser admin flows
 
-Upcoming improvements:
+### 🚀 Upcoming improvements
 
+#### 🔄 Backend architecture
 - [ ] Asynchronous background tasks (email notifications, stock sync)
-- [ ] Payment integration (Stripe / PayPal sandbox)
-- [ ] Admin dashboard (React / Next.js)
-- [ ] Product recommendations (simple scoring / Redis-based)
-- [ ] Upload API for real images (S3 / MinIO)
-- [ ] Webhooks for events (product.created, order.created, etc.)
 - [ ] Microservice extraction (catalog, orders, payments)
+- [ ] Webhooks for events (`product.created`, `order.created`, `payment.paid`, etc.)
+
+#### 💳 Payments
+- [ ] Real payment provider integration (Stripe / PayPal sandbox)
+
+#### 🛠️ Admin & tools
+- [ ] Admin dashboard UI (React / Next.js)
+- [ ] Upload API for real images (S3 / MinIO)
+
+#### 🧠 Product intelligence
+- [ ] Recommendation engine (Redis-based scoring)
 
 
 ## 🧑‍💻 Author: ๛Samer Shams๖
