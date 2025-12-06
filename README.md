@@ -526,6 +526,48 @@ docker compose exec -T db sh -lc \
   "in_stock": true
 }
 ```
+### 🔍 Similar products
+
+`GET /products/{prod_id}/similar` — returns products similar to the given one.
+
+**Logic:**
+
+* First tries products with the **same category and brand**.
+* If none found — falls back to **same category**.
+* If still none — falls back to **recent active products** (excluding the base one).
+
+**Query params:**
+
+* `limit` — max number of similar products to return (default `4`, max `20`).
+
+**Response example** (`200 OK`):
+
+```json
+[
+  {
+    "id": 2,
+    "sku": "SKU-2",
+    "name": "Phone 2",
+    "slug": "phone-2",
+    "brand_id": 1,
+    "category_id": 1,
+    "price_cents": 95000,
+    "is_active": true,
+    "created_at": "2025-10-20T09:12:34.123Z"
+  },
+  {
+    "id": 3,
+    "sku": "SKU-3",
+    "name": "Phone 3",
+    "slug": "phone-3",
+    "brand_id": 1,
+    "category_id": 1,
+    "price_cents": 110000,
+    "is_active": true,
+    "created_at": "2025-10-25T11:00:00.000Z"
+  }
+]
+```
 
 ## 🔁 Caching (Redis)
 * /products listing is cached for 120 seconds (the key includes filters/sort/pagination)

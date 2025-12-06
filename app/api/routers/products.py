@@ -145,3 +145,55 @@ def get_product(prod_id: int, db: Session = Depends(get_db)) -> ProductDetail:
         inventory_qty=inv_qty,
         in_stock=(inv_qty or 0) > 0,
     )
+
+
+@router.get(
+    "/{prod_id}/similar",
+    response_model=list[ProductRead],
+    summary="List similar products",
+    description=(
+        "Returns products similar to the given product. By default uses the same category and brand, with fallbacks."
+    ),
+    responses={404: {"description": "product not found"}},
+)
+def get_similar_products(
+    prod_id: int,
+    db: Session = Depends(get_db),
+    limit: int = Query(
+        4,
+        ge=1,
+        le=20,
+        description="Maximum number of similar products to return",
+    ),
+) -> list[ProductRead]:
+    base = db.query(Product).filter(Product.id == prod_id, Product.is_active.is_(True)).first()
+    if not base:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    def query_similar(
+        *,
+        same_category: bool,
+        same_brand: bool,
+    ) -> list[Product]:
+        q = db.query(Product).filter(
+            Product.is_active.is_(True),
+            Product.id != base.id,
+        )
+
+        if same_category and base.category_id is not None:
+            q = q.filter(Product.category_id == base.category_id)
+
+        if same_brand and base.brand_id is not None:
+            q = q.filter(Product.brand_id == base.brand_id)
+
+        return q.order_by(Product.created_at.desc()).limit(limit).all()
+
+    items = query_similar(same_category=True, same_brand=True)
+    if not items:
+        items = query_similar(same_category=True, same_brand=False)
+    if not items:
+        items = query_similar(same_category=False, same_brand=False)
+    return items
