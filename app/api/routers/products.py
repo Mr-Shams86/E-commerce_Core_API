@@ -96,6 +96,49 @@ def list_products(
         "created_asc": Product.created_at.asc(),
     }
 
+    use_popular = sort == "popular"
+
+    if use_popular:
+        stmt_all = select(Product).where(*filters)
+        products = db.execute(stmt_all).scalars().all()
+        total = len(products)
+
+        views_map: dict[int, int] = {}
+
+        if r is not None and products:
+            try:
+                ids = [p.id for p in products]
+                keys = [f"product:views:{pid}" for pid in ids]
+                raw_counts = r.mget(keys)  # список либо None
+
+                for pid, raw in zip(ids, raw_counts):
+                    try:
+                        views_map[pid] = int(raw) if raw is not None else 0
+                    except (TypeError, ValueError):
+                        views_map[pid] = 0
+            except Exception:
+                # Если Redis отвалился - считаем, что у всех 0 просмотров
+                views_map = {}
+
+        # Сортируем: сначала по просмотрам, потом по дате создания
+        products.sort(
+            key=lambda p: (views_map.get(p.id, 0), p.created_at),
+            reverse=True,
+        )
+
+        # Пагинация уже по отсортированному списку
+        items = products[offset : offset + limit]
+    else:
+        # обычная сортировка по полю из order_map
+        stmt_items = select(Product).where(*filters).order_by(order_map[sort]).limit(limit).offset(offset)
+        items = db.execute(stmt_items).scalars().all()
+
+        # total через subquery, чтобы не ловить SADeprecationWarning
+        base_stmt = select(Product.id).where(*filters).subquery()
+        total = db.scalar(select(func.count()).select_from(base_stmt)) or 0
+
+    result = Page(total=total, limit=limit, offset=offset, items=items)
+
     # Запрос на элементы
     stmt_items = select(Product).where(*filters).order_by(order_map[sort]).limit(limit).offset(offset)
     items = db.execute(stmt_items).scalars().all()
@@ -135,6 +178,14 @@ def get_product(prod_id: int, db: Session = Depends(get_db)) -> ProductDetail:
     )
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
+
+    # Счётчик просмотров товаров в Redis
+    r = get_redis()
+    if r is not None:
+        try:
+            r.incr(f"product:views:{prod_id}")
+        except Exception:
+            pass
 
     inv_qty = obj.inventory.qty if obj.inventory else None
 

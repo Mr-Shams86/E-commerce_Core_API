@@ -490,10 +490,12 @@ docker compose exec -T db sh -lc \
 * brand_id — filter by brand
 * min_price — minimum price in cents (inclusive)
 * max_price — maximum price in cents (inclusive)
-* sort: price_asc, price_desc, created_desc (default), created_asc
+* sort: price_asc, price_desc, created_desc (default), created_asc, popular
 * limit — pagination (default 20, max 100), offset (default 0)
 
 * If both `min_price` and `max_price` are provided, `min_price` must be less than or equal to `max_price`.
+* If `sort=popular` is used, products are ordered by view count (tracked in Redis) with newest items as a tiebreaker.
+
 
 **Response** (pagination):
 ```json
