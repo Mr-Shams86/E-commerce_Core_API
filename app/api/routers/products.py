@@ -1,7 +1,7 @@
 import json
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
@@ -31,11 +31,37 @@ def list_products(
     category_id: Optional[int] = Query(None, description="Фильтр по категории"),
     brand_id: Optional[int] = Query(None, description="Фильтр по бренду"),
     sort: Sort = Query("created_desc", description="Сортировка"),
+    min_price: int | None = Query(
+        None,
+        ge=0,
+        description="Minimum price in cents (inclusive)",
+    ),
+    max_price: int | None = Query(
+        None,
+        ge=0,
+        description="Maximum price in cents (inclusive)",
+    ),
     limit: int = Query(20, ge=1, le=100, description="Размер страницы"),
     offset: int = Query(0, ge=0, description="Смещение"),
 ):
+    if min_price is not None and max_price is not None and min_price > max_price:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="min_price cannot be greater than max_price",
+        )
+
     r = get_redis()
-    cache_key = f"products:{q or ''}:{category_id or ''}:{brand_id or ''}:{sort}:{limit}:{offset}"
+    cache_key = (
+        "products:"
+        f"q={q or ''}|"
+        f"category={category_id or ''}|"
+        f"brand={brand_id or ''}|"
+        f"min_price={min_price if min_price is not None else ''}|"
+        f"max_price={max_price if max_price is not None else ''}|"
+        f"sort={sort}|"
+        f"limit={limit}|"
+        f"offset={offset}"
+    )
 
     if r is not None:
         try:
@@ -57,6 +83,10 @@ def list_products(
         filters.append(Product.category_id == category_id)
     if brand_id:
         filters.append(Product.brand_id == brand_id)
+    if min_price is not None:
+        filters.append(Product.price_cents >= min_price)
+    if max_price is not None:
+        filters.append(Product.price_cents <= max_price)
 
     # Карта сортировок
     order_map = {
