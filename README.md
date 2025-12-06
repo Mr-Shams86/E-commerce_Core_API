@@ -488,8 +488,12 @@ docker compose exec -T db sh -lc \
 * q — search by name / slug
 * category_id — filter by category
 * brand_id — filter by brand
+* min_price — minimum price in cents (inclusive)
+* max_price — maximum price in cents (inclusive)
 * sort: price_asc, price_desc, created_desc (default), created_asc
 * limit — pagination (default 20, max 100), offset (default 0)
+
+* If both `min_price` and `max_price` are provided, `min_price` must be less than or equal to `max_price`.
 
 **Response** (pagination):
 ```json
@@ -505,7 +509,7 @@ docker compose exec -T db sh -lc \
 
 **Response**
 ```json
-* {
+{
   "id": 1,
   "sku": "SKU-1",
   "name": "Phone 1",
@@ -595,7 +599,7 @@ CI (GitHub Actions, .github/workflows/ci.yml):
 
 - ✔ Full product catalog (categories, brands, products, images)
 - ✔ Inventory management
-- ✔ Public product listing with Redis caching
+- ✔ Public product listing with flexible filters (search, category, brand, price range) and Redis caching
 - ✔ Orders + OrderItems
 - ✔ Payments subsystem (fake provider for demo)
 - ✔ Authentication & superuser admin flows
